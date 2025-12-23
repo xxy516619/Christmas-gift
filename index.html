@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Merry Christmas 🎄</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Great+Vibes&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 全局样式 --- */
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364); /* 深色背景 */
+            color: #fff;
+            font-family: "Montserrat", sans-serif;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        /* --- 全局动态背景画布 --- */
+        #bgCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -2; /* 放在最底层 */
+            pointer-events: none;
+        }
+
+        /* --- 背景装饰 (巨大的模糊圣诞树) --- */
+        .bg-decoration {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Great Vibes', cursive;
+            font-size: 45vw; /* 超大 */
+            opacity: 0.15; /* 很淡 */
+            filter: blur(8px);
+            z-index: -1;
+            pointer-events: none;
+            color: #16a085;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+            z-index: 10; /* 保证内容在背景之上 */
+            /* 给容器加一个半透明毛玻璃背景，让文字更清晰 */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 30px 20px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: transform 0.3s ease;
+        }
+
+        h2 {
+            font-family: 'Cinzel', serif; /* 古典字体 */
+            font-size: 1.4rem;
+            margin-bottom: 35px;
+            line-height: 1.6;
+            /* 金色渐变文字 */
+            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent; 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        /* --- 封面页特别样式 --- */
+        .cover-title {
+            font-family: 'Great Vibes', cursive; /* 浪漫手写体 */
+            font-size: 4rem; /* 放大 */
+            margin: 0 0 10px 0;
+            color: #ff4757;
+            text-shadow: 0 0 10px rgba(255, 71, 87, 0.6), 0 0 20px rgba(255, 71, 87, 0.4);
+            animation: floatTitle 3s ease-in-out infinite;
+        }
+        .cover-subtitle {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 3px; /* 增加字间距，显得高级 */
+            text-transform: uppercase; /* 全大写 */
+            margin-bottom: 50px;
+            opacity: 0.8;
+            color: #dfe6e9;
+        }
+        /* --- 按钮升级：流光按钮 --- */
+        .btn-start, .btn-confirm {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(90deg, #ff6b6b, #ff4757, #ff6b6b);
+            background-size: 200%;
+            border: none;
+            padding: 15px 50px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255, 71, 87, 0.4);
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .btn-start:hover, .btn-confirm:hover {
+            background-position: right center; /* 鼠标悬停时背景流动 */
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 71, 87, 0.6);
+        }
+
+        /* --- 输入框美化 --- */
+        input[type="text"], input[type="number"] {
+            font-family: 'Montserrat', sans-serif;
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            font-size: 1.3rem;
+            width: 70%;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+            margin-bottom: 45px;
+        }
+        input:focus {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
+        }
+
+        /* --- 关卡控制 --- */
+        .level {
+            display: none; /* 默认隐藏 */
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .level.active {
+            display: block; /* 激活显示 */
+        }
+
+
+        /* --- 图片网格 (通用) --- */
+        .grid-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        .grid-options.level-2 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        .grid-item {
+            position: relative;
+            cursor: pointer;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .grid-item:hover {
+            transform: scale(1.05);
+        }
+        .grid-item img {
+            width: 100%;
+            aspect-ratio: 1 / 1; 
+            object-fit: cover;
+            display: block;
+        }
+
+        /* --- Level 2 排序题专用 --- */
+        .sort-item.selected { 
+            border-color: #ff4757; 
+            transform: scale(0.95); 
+        }
+        .sort-item.selected::after {
+            content: ''; 
+            position: absolute; 
+            inset: 0; 
+            background: rgba(255, 71, 87, 0.3);
+        }
+        .sort-badge {
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            background: #ff4757; 
+            color: white; 
+            width: 45px; 
+            height: 45px;
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-family: 'Cinzel', serif; font-size: 1.5rem; 
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.6);
+            opacity: 0; 
+            transition: opacity 0.2s; z-index: 2;
+        }
+        .sort-item.selected .sort-badge { 
+            opacity: 1; 
+        }
+
+        /* --- 选项卡样式 --- */
+        .text-option, .img-text-option {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            padding: 18px; 
+            margin: 12px 0;
+            border-radius: 12px; 
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 1.1rem; 
+            transition: all 0.2s;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+        }
+        .text-option:hover, .img-text-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateX(5px);
+        }
+        .img-text-option { 
+            flex-direction: column; 
+            padding: 0 0 15px 0; 
+            overflow: hidden; 
+        }
+        .img-text-option img { 
+            width: 100%; 
+            aspect-ratio: 16/10; 
+            object-fit: cover; 
+        }
+        .img-text-option span { 
+            margin-top: 10px; 
+            font-weight: 600; 
+        }
+
+        /* --- 错误反馈 --- */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        .shake-screen .container { 
+            animation: shake 0.4s ease-in-out; 
+            border-color: #ff4757; 
+        }
+        #wrong-overlay {
+            position: fixed; 
+            inset: 0; 
+            display: none; 
+            justify-content: center; 
+            align-items: center;
+            z-index: 999; 
+            pointer-events: none; 
+            background: rgba(0,0,0,0.2);
+        }
+        #wrong-overlay span { 
+            font-size: 8rem; 
+            text-shadow: 0 0 30px #ff0000; 
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+
+        /* --- 最终惊喜页面 --- */
+        #final-page {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at bottom, #0f2027, #203a43, #2c5364);
+            z-index: 1000;
+            display: none;
+        }
+        canvas { 
+            position: absolute; 
+            inset: 0; 
+            pointer-events: none;
+        }
+        
+        .tree-container {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 2;
+        }
+        .christmas-tree {
+            font-size: 120px;
+            animation: breathe 3s infinite ease-in-out;
+            cursor: pointer;
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px gold); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 30px red); }
+        }
+        @keyframes textGlow { 
+            from { 
+                text-shadow: 0 0 10px rgba(255, 189, 89, 0.5); 
+            } 
+            to { 
+                text-shadow: 0 0 30px rgba(255, 189, 89, 1); 
+            }         
+        }
+        @keyframes fadeIn { 
+            from { 
+                opacity: 0; transform: translateY(10px); 
+            } 
+            to { 
+                opacity: 1; transform: translateY(0); 
+            } 
+        }
+        @keyframes popIn { 
+            from { 
+                transform: scale(0); opacity: 0; 
+            } 
+            to { 
+                transform: scale(1); opacity: 1; 
+            } 
+        }
+        .final-msg {
+            font-family: 'Great Vibes', cursive;
+            font-size: 3.5rem; margin-top: 10px; color: #ffbd59;
+            text-shadow: 0 0 15px rgba(255, 189, 89, 0.8);
+            animation: textGlow 2s infinite alternate;
+        }
+
+        /* --- 重玩按钮样式 --- */
+        .btn-restart {
+            margin-top: 30px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.6);
+            padding: 8px 25px; border-radius: 20px; cursor: pointer;
+            font-family: 'Montserrat', sans-serif; font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .btn-restart:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #fff; 
+            color: #fff;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <audio id="bgm" loop preload="auto">
+        <source src="music/bgm.mp3" type="audio/mpeg">
+    </audio>
+
+    <canvas id="bgCanvas"></canvas>
+    <div class="bg-decoration">🎄</div>
+
+    <div id="wrong-overlay"><span>❌</span></div>
+
+    <div class="container">
+        
+        <div id="level-0" class="level active">
+            <div class="cover-title">🎄 Merry Christmas! 🎄</div>
+            <div class="cover-subtitle">一份专属于你的解密挑战</div>
+            <button class="btn-start" onclick="startGame()">开始挑战</button>
+        </div>
+
+        <div id="level-1" class="level">
+            <h2>Q1: 我们在一起已经多少天了？</h2>
+            <input type="number" id="ans-1" placeholder="输入数字">
+            <br>
+            <button class="btn-confirm" onclick="checkLevel1()">确认</button>
+        </div>
+
+        <div id="level-2" class="level">
+            <h2>Q2: 按时间顺序点击这些照片</h2>
+            <div class="grid-options level-2" id="sort-grid">
+                <div class="grid-item sort-item" onclick="toggleSort(0)">
+                    <img src="images/sort1.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(1)">
+                    <img src="images/sort2.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(2)">
+                    <img src="images/sort3.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(3)">
+                    <img src="images/sort4.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(4)">
+                    <img src="images/sort5.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(5)">
+                    <img src="images/sort6.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(6)">
+                    <img src="images/sort7.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(7)">
+                    <img src="images/sort8.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(8)">
+                    <img src="images/sort9.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(9)">
+                    <img src="images/sort10.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(10)">
+                    <img src="images/sort11.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(11)">
+                    <img src="images/sort12.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(12)">
+                    <img src="images/sort13.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(13)">
+                    <img src="images/sort14.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(14)">
+                    <img src="images/sort15.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(15)">
+                    <img src="images/sort16.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(16)">
+                    <img src="images/sort17.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(17)">
+                    <img src="images/sort18.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(18)">
+                    <img src="images/sort19.jpg"> <div class="sort-badge"></div>
+                </div>
+                <div class="grid-item sort-item" onclick="toggleSort(19)">
+                    <img src="images/sort20.jpg"> <div class="sort-badge"></div>
+                </div>
+            </div>
+            <br>
+            <button class="btn-confirm" onclick="checkLevel2()">确认顺序</button>
+        </div>
+
+        <div id="level-3" class="level">
+            <h2>Q3: 哪辆车是我最喜欢的？</h2>
+            <div class="grid-options">
+                <div class="grid-item" onclick="checkLevel3(false)"><img src="images/car_wrong1.jpg"></div>
+                <div class="grid-item" onclick="checkLevel3(true)"><img src="images/car_right.jpg"></div> 
+                <div class="grid-item" onclick="checkLevel3(false)"><img src="images/car_wrong2.jpg"></div>
+                <div class="grid-item" onclick="checkLevel3(false)"><img src="images/car_wrong3.jpg"></div>
+                <div class="grid-item" onclick="checkLevel3(false)"><img src="images/car_wrong4.jpg"></div>
+                <div class="grid-item" onclick="checkLevel3(false)"><img src="images/car_wrong5.jpg"></div>
+            </div>
+        </div>
+
+        <div id="level-4" class="level">
+            <h2>Q4: 哪幅书法是我最喜欢的？</h2>
+            <div class="grid-options">
+                <div class="grid-item" onclick="checkLevel4(false)"><img src="images/calligraphy1.jpg"></div>
+                <div class="grid-item" onclick="checkLevel4(false)"><img src="images/calligraphy2.jpg"></div>
+                <div class="grid-item" onclick="checkLevel4(false)"><img src="images/calligraphy3.jpg"></div>
+                <div class="grid-item" onclick="checkLevel4(true)"><img src="images/calligraphy_right.jpg"></div>
+                <div class="grid-item" onclick="checkLevel4(false)"><img src="images/calligraphy4.jpg"></div>
+                <div class="grid-item" onclick="checkLevel4(false)"><img src="images/calligraphy5.jpg"></div>
+            </div>
+        </div>
+
+        <div id="level-5" class="level">
+            <h2>Q5: 我们的一次性胶片相机还剩几张？</h2>
+            <input type="number" id="ans-5" placeholder="输入数字">
+            <br>
+            <button class="btn-confirm" onclick="checkLevel5()">确认</button>
+        </div>
+
+        <div id="level-6" class="level">
+            <h2>Q6: 青甘大环线我们租的车的车牌是？</h2>
+            <div class="text-option" onclick="checkLevel6(false)">甘A·OEL21</div>
+            <div class="text-option" onclick="checkLevel6(false)">青A·0FL21</div> 
+            <div class="text-option" onclick="checkLevel6(true)">甘A·0EL21</div>
+            <div class="text-option" onclick="checkLevel6(false)">甘A·OFL21</div>
+            <div class="text-option" onclick="checkLevel6(false)">甘A·0EI21</div>
+            <div class="text-option" onclick="checkLevel6(false)">青A·0FI21</div>
+        </div>
+
+        <div id="level-7" class="level">
+            <h2>Q7: 那天中网比赛，我们没有看到谁？</h2>
+            <div class="grid-options">
+                <div class="img-text-option" onclick="checkLevel7(false)">
+                    <img src="images/player1.jpg"><span>Mirra Andreeva</span>
+                </div>
+                <div class="img-text-option" onclick="checkLevel7(false)">
+                    <img src="images/player2.jpg"><span>Karolina Muchova</span>
+                </div>
+                <div class="img-text-option" onclick="checkLevel7(true)"> 
+                    <img src="images/player_missing.jpg"><span>Iga Swiatek</span>
+                </div>
+                <div class="img-text-option" onclick="checkLevel7(false)">
+                    <img src="images/player3.jpg"><span>Priscilla Hon</span>
+                </div>
+                <div class="img-text-option" onclick="checkLevel7(false)">
+                    <img src="images/player4.jpg"><span>Linda Noskova</span>
+                </div>
+                <div class="img-text-option" onclick="checkLevel7(false)">
+                    <img src="images/player5.jpg"><span>Anastasia Potapova</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="final-gift-container" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 9999; background: black;">
+        <iframe 
+            id="gift-frame"
+            src="" 
+            frameborder="0" 
+            allow="camera; microphone; autoplay" 
+            style="width: 100%; height: 100%; border: none;">
+        </iframe>
+        
+        <button onclick="location.reload()" style="position: absolute; bottom: 20px; left: 20px; color: gold; background: transparent; border: 1px solid gold; padding: 5px 10px; cursor: pointer; border-radius: 5px;">
+            ↺ Replay
+        </button>
+    </div>
+
+    <script>
+        // ================= 配置区域 (请在这里修改答案) =================
+        const ANSWERS = {
+            q1_days: "467",       // Q1: 在一起的天数
+            q2_order: [0, 18, 6, 5, 11, 8, 7, 17, 13, 12, 19, 3, 16, 9, 10, 15, 4, 1, 2, 14], // Q2: 正确的图片点击索引顺序 (0代表第一张图, 1代表第二张...)
+            q5_film: "8",         // Q5: 剩余胶片数
+        };
+        // ============================================================
+
+        let currentLevel = 0;
+
+        // --- 全局背景粒子特效 (Bling Bling) ---
+        function initBgParticles() {
+            const canvas = document.getElementById('bgCanvas');
+            const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            let particles = [];
+            for(let i = 0; i < 100; i++) { // 粒子数量
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    r: Math.random() * 2 + 0.5, // 半径
+                    d: Math.random() * 1 + 0.2, // 下落速度
+                    a: Math.random() * 0.5 + 0.1 // 透明度
+                })
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+                ctx.beginPath();
+                for(let i = 0; i < particles.length; i++) {
+                    let p = particles[i];
+                    ctx.moveTo(p.x, p.y);
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2, true);
+                }
+                ctx.fill();
+                update();
+            }
+
+            function update() {
+                for(let i = 0; i < particles.length; i++) {
+                    let p = particles[i];
+                    p.y += p.d;
+                    // 飘动效果
+                    p.x += Math.sin(p.y * 0.01) * 0.2;
+                    if(p.y > height) {
+                        particles[i] = {x: Math.random()*width, y: -10, r:p.r, d:p.d, a:p.a};
+                    }
+                }
+            }
+            
+            function animate() { draw(); requestAnimationFrame(animate); }
+            animate();
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+        }
+        initBgParticles(); // 立即启动背景特效
+
+        // --- 游戏控制 ---
+        function startGame() { 
+            const bgm = document.getElementById('bgm');
+            if (bgm) {
+                bgm.volume = 0.5; // 音量设置 0.5 (半音量)，防止把女朋友吓一跳
+                bgm.play().catch(error => {
+                    console.log("浏览器阻止了自动播放，用户需要更多交互", error);
+                });
+            }
+            nextLevel(); 
+        }
+        
+        // 工具函数：切换关卡
+        function nextLevel() {
+            document.getElementById(`level-${currentLevel}`).classList.remove('active');
+            currentLevel++;
+            if (currentLevel <= 7) {
+                document.getElementById(`level-${currentLevel}`).classList.add('active');
+            } else {
+                showFinalSurprise();
+            }
+        }
+
+        // 工具函数：错误反馈 (抖动 + 红叉)
+        function triggerError() {
+            // 1. 屏幕抖动
+            document.body.classList.add('shake-screen');
+            setTimeout(() => document.body.classList.remove('shake-screen'), 500);
+
+            // 2. 显示红叉
+            const overlay = document.getElementById('wrong-overlay');
+            overlay.style.display = 'flex';
+            setTimeout(() => overlay.style.display = 'none', 800);
+            
+            // 3. (可选) 可以在这里加一个错误的音效
+        }
+
+        // --- Level 1 逻辑 ---
+        function checkLevel1() {
+            const val = document.getElementById('ans-1').value.trim();
+            if (val === ANSWERS.q1_days) nextLevel();
+            else triggerError();
+        }
+
+        // --- Level 2 逻辑 (复杂的排序) ---
+        let userSequence = []; // 存储用户点击的索引
+
+        function toggleSort(index) {
+            const items = document.querySelectorAll('.sort-item');
+            
+            // 检查是否已经选过
+            const existingPos = userSequence.indexOf(index);
+            
+            if (existingPos !== -1) {
+                // 如果已经选过，则取消选择 (移除)
+                userSequence.splice(existingPos, 1);
+            } else {
+                // 没选过，添加到末尾
+                userSequence.push(index);
+            }
+
+            // 重新渲染UI (核心逻辑：根据数组顺序给 Badge 赋值)
+            items.forEach((item, idx) => {
+                // 清除状态
+                item.classList.remove('selected');
+                item.querySelector('.sort-badge').innerText = '';
+            });
+
+            // 加上状态
+            userSequence.forEach((imgIndex, orderIndex) => {
+                const targetItem = items[imgIndex];
+                targetItem.classList.add('selected');
+                targetItem.querySelector('.sort-badge').innerText = orderIndex + 1;
+            });
+        }
+
+        function checkLevel2() {
+            // 检查长度
+            if (userSequence.length !== ANSWERS.q2_order.length) {
+                triggerError();
+                return;
+            }
+            // 检查每一项
+            const isCorrect = userSequence.every((val, index) => val === ANSWERS.q2_order[index]);
+            
+            if (isCorrect) nextLevel();
+            else {
+                triggerError();
+                // 可以在这里清空选择，或者保留让用户修改，这里选择保留让用户修改
+            }
+        }
+
+        // --- Level 3, 4, 6, 7 通用逻辑 (点击即判断) ---
+        function checkLevel3(isRight) { isRight ? nextLevel() : triggerError(); }
+        function checkLevel4(isRight) { isRight ? nextLevel() : triggerError(); }
+        function checkLevel6(isRight) { isRight ? nextLevel() : triggerError(); }
+        function checkLevel7(isRight) { isRight ? nextLevel() : triggerError(); }
+
+        // --- Level 5 逻辑 ---
+        function checkLevel5() {
+            const val = document.getElementById('ans-5').value.trim();
+            if (val === ANSWERS.q5_film) nextLevel();
+            else triggerError();
+        }
+
+        // ================= 最终惊喜 =================
+        function showFinalSurprise() {
+            const bgm = document.getElementById('bgm');
+            if (bgm) {
+                bgm.pause(); // 暂停
+                bgm.currentTime = 0; // (可选) 进度归零
+            }
+            // 1. 隐藏原来的游戏界面
+            document.querySelector('.container').style.display = 'none';
+            document.getElementById('bgCanvas').style.display = 'none';
+            document.querySelector('.bg-decoration').style.display = 'none';
+
+            // 2. 显示礼物容器
+            const giftContainer = document.getElementById('final-gift-container');
+            giftContainer.style.display = 'block';
+
+            // 3. 核心一步：加载礼物页面！
+            // 这样做的好处是：游戏刚开始时不加载 3D，通关那一刻才开始加载，不仅省流量，还能制造“开启”的感觉
+            const giftFrame = document.getElementById('gift-frame');
+            giftFrame.src = "./final_gift/index.html";
+        }
+
+        // 简易烟花粒子系统
+        function startFireworks() {
+            const canvas = document.getElementById('fireworksCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let particles = [];
+            
+            class Particle {
+                constructor(x, y, color) {
+                    this.x = x; this.y = y; this.color = color;
+                    this.velocity = { x: (Math.random() - 0.5) * 8, y: (Math.random() - 0.5) * 8 };
+                    this.alpha = 1; this.friction = 0.96;
+                }
+                draw() {
+                    ctx.globalAlpha = this.alpha;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 2, 0, Math.PI * 2, false);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+                update() {
+                    this.velocity.x *= this.friction;
+                    this.velocity.y *= this.friction;
+                    this.x += this.velocity.x;
+                    this.y += this.velocity.y;
+                    this.alpha -= 0.01;
+                }
+            }
+
+            function createFirework(x, y) {
+                const color = `hsl(${Math.random() * 360}, 50%, 50%)`;
+                for (let i = 0; i < 30; i++) {
+                    particles.push(new Particle(x, y, color));
+                }
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // 拖尾效果
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                particles.forEach((particle, index) => {
+                    if (particle.alpha > 0) {
+                        particle.update();
+                        particle.draw();
+                    } else {
+                        particles.splice(index, 1);
+                    }
+                });
+
+                // 随机自动发射
+                if (Math.random() < 0.05) {
+                    createFirework(Math.random() * canvas.width, Math.random() * canvas.height * 0.5);
+                }
+            }
+            animate();
+            
+            // 点击屏幕也会发射
+            canvas.addEventListener('click', (e) => {
+                createFirework(e.clientX, e.clientY);
+            });
+        }
+
+        // --- 再玩一次的功能 ---
+        function replayGame() {
+            // 直接刷新页面，这是最稳妥的重置方式
+            // 它会清空所有输入、重置音乐、重置排序题的状态
+            location.reload(); 
+        }
+
+
+        // ============================================
+        // 👇👇👇 测试专用：上帝模式菜单 (发布前请删除) 👇👇👇
+        // ============================================
+        (function debugMode() {
+            // 1. 创建悬浮容器
+            const debugDiv = document.createElement('div');
+            debugDiv.style.cssText = `
+                position: fixed; 
+                top: 10px; 
+                right: 10px; 
+                z-index: 10000; 
+                background: rgba(0, 0, 0, 0.8); 
+                padding: 10px; 
+                border-radius: 8px; 
+                box-shadow: 0 0 10px rgba(0,0,0,0.5);
+                font-family: sans-serif;
+            `;
+
+            // 2. 创建下拉菜单
+            const select = document.createElement('select');
+            select.style.cssText = "padding: 5px; font-size: 14px; border-radius: 4px;";
+            
+            // 定义所有关卡
+            const levels = [
+                { val: 0, text: "Level 0: 封面" },
+                { val: 1, text: "Level 1: 天数" },
+                { val: 2, text: "Level 2: 照片排序" },
+                { val: 3, text: "Level 3: 选车" },
+                { val: 4, text: "Level 4: 书法" },
+                { val: 5, text: "Level 5: 胶片" },
+                { val: 6, text: "Level 6: 车牌" },
+                { val: 7, text: "Level 7: 中网" },
+                { val: 99, text: "🎉 最终惊喜页" }
+            ];
+
+            // 生成选项
+            levels.forEach(lvl => {
+                const opt = document.createElement('option');
+                opt.value = lvl.val;
+                opt.innerText = lvl.text;
+                select.appendChild(opt);
+            });
+
+            // 3. 绑定跳转逻辑
+            select.onchange = function() {
+                const target = parseInt(this.value);
+                
+                // 重置状态
+                document.getElementById('final-gift-container').style.display = 'none'; // 藏起烟花页
+                document.querySelector('.container').style.display = 'block'; // 显示主容器
+                
+                // 隐藏所有关卡
+                for (let i = 0; i <= 7; i++) {
+                    const el = document.getElementById(`level-${i}`);
+                    if (el) el.classList.remove('active');
+                }
+
+                if (target === 99) {
+                    // 如果选的是最终页
+                    showFinalSurprise();
+                } else {
+                    // 如果选的是普通关卡
+                    currentLevel = target; // 更新全局变量，保证"下一关"逻辑正确
+                    document.getElementById(`level-${target}`).classList.add('active');
+                }
+            };
+
+            // 4. 添加标签
+            const label = document.createElement('div');
+            label.innerText = "🔧 测试跳转:";
+            label.style.cssText = "color: #fff; margin-bottom: 5px; font-size: 12px; font-weight: bold;";
+
+            // 5. 组装并插入页面
+            debugDiv.appendChild(label);
+            debugDiv.appendChild(select);
+            document.body.appendChild(debugDiv);
+
+        })();
+        // ============================================
+        // 👆👆👆 测试专用代码结束 👆👆👆
+        // ============================================
+    </script>
+
+    
+</body>
+</html>
